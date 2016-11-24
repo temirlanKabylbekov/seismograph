@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 
+# для совместимости python 2 и 3 (объявления метаклассов в них)
 from six import with_metaclass
 
 from ...utils import pyv
@@ -55,6 +56,7 @@ class PageCache(dict):
             super(PageCache, self).clear()
 
 
+# отдельный кусок Page
 class PageElement(object):
 
     def __init__(self, *args, **options):
@@ -244,8 +246,7 @@ class PageMeta(type):
         page_objects = (
             (a, getattr(cls, a, None))
             for a in dir(cls)
-            if not a.startswith('_')
-            and
+            if not a.startswith('_') and
             isinstance(getattr(cls, a, None), PageElement)
         )
 
@@ -297,6 +298,7 @@ class _Base(with_metaclass(PageMeta, object)):
         self.__proxy = proxy
 
 
+# описание всей страницы
 class Page(_Base):
 
     __area__ = None
@@ -342,8 +344,14 @@ class Page(_Base):
         self._proxy.browser.refresh()
 
 
+# отдельный элемент на странице, допуститм input c name='q'
 class PageItem(_Base):
 
+    # описывает PageItem
+    # selenium.query(
+    #     selenium.query.DIV,
+    #     id='top-menu',
+    # )
     __area__ = None
     __nested__ = True
 
@@ -365,3 +373,5 @@ class PageItem(_Base):
             return self.__area__(proxy).first()
 
         return proxy
+
+# file:///home/temirlan/TP3_SEM/QA/seismograph/docs/_build/html/selenium_page_object.html
