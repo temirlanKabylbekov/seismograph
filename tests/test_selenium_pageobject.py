@@ -85,12 +85,11 @@ class PageElementTestCase(unittest.TestCase):
             Test when passing neither one args.
 
         """
-        try:
+        with self.assertRaises(AssertionError) as context:
             page_element = PageElement()
-        except AssertionError as e:
-            self.assertEqual(
-                'Element can not be created without arguments', e.message
-            )
+        self.assertTrue(
+            'Element can not be created without arguments' in context.exception
+        )
 
     def test_init_pass_class_instance_of_type(self):
         """Test `__init__` method.

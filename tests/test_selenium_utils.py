@@ -153,11 +153,10 @@ class ReRaiseRxcTestCase(unittest.TestCase):
             Test throwing exception.
 
         """
-        try:
+        with self.assertRaises(ReRaiseException) as context:
             wrapped = re_raise_exc(self.mock_foo)
             wrapped()
-        except ReRaiseException as e:
-            self.assertEqual(e.message, self.base_exception_message)
+        self.assertTrue(self.base_exception_message in context.exception)
 
     def test_re_raise_exc_specify_message(self):
         """Test `re_raise_exc` function.
@@ -176,11 +175,10 @@ class ReRaiseRxcTestCase(unittest.TestCase):
                 '(from BaseException)'
             )
         )
-        try:
+        with self.assertRaises(ReRaiseException) as context:
             wrapped = re_raise_exc(self.mock_foo, message=re_raise_exception_message)
             wrapped()
-        except ReRaiseException as e:
-            self.assertEqual(e.message, expected_message)
+        self.assertTrue(expected_message in context.exception)
 
     def test_re_raise_exc_specify_exception(self):
         """Test `re_raise_exc` function.
@@ -190,11 +188,10 @@ class ReRaiseRxcTestCase(unittest.TestCase):
             passing to this function.
 
         """
-        try:
+        with self.assertRaises(ValueError) as context:
             wrapped = re_raise_exc(self.mock_foo, exc_cls=ValueError)
             wrapped()
-        except ValueError as e:
-            self.assertEqual(e.message, self.base_exception_message)
+        self.assertTrue(self.base_exception_message in context.exception)
 
 
 def main():
