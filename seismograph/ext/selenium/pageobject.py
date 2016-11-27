@@ -2,7 +2,6 @@
 
 from contextlib import contextmanager
 
-# для совместимости python 2 и 3 (объявления метаклассов в них)
 from six import with_metaclass
 
 from ...utils import pyv
@@ -56,7 +55,6 @@ class PageCache(dict):
             super(PageCache, self).clear()
 
 
-# отдельный кусок Page
 class PageElement(object):
 
     def __init__(self, *args, **options):
@@ -98,16 +96,13 @@ class PageElement(object):
             )
 
         if self.__call:
-            print('CALL')
             if self.__list_class:
-                print('HEYO')
                 self.__list_class = type(
                     self.__list_class.__name__,
                     (self.__list_class, ),
                     {'__call__': self.__call},
                 )
             elif self.__we_class and not self.__is_list:
-                print('BRATAN')
                 self.__we_class = type(
                     self.__we_class.__name__,
                     (self.__we_class, ),
@@ -115,7 +110,6 @@ class PageElement(object):
                 )
             else:
                 if self.__is_list:
-                    print('ETO BASHORTOSTAN')
                     self.__list_class = type(
                         'CallableObject',
                         (ProxyObject, ),
@@ -250,13 +244,13 @@ class PageMeta(type):
         page_objects = (
             (a, getattr(cls, a, None))
             for a in dir(cls)
-            if not a.startswith('_') and
+            if not a.startswith('_')
+            and
             isinstance(getattr(cls, a, None), PageElement)
         )
 
         for atr_name, page_object in page_objects:
             if key(page_object):
-                print('jjfdffddfdf')
                 cls.__dct__[key(page_object)] = atr_name
 
         return cls
@@ -303,7 +297,6 @@ class _Base(with_metaclass(PageMeta, object)):
         self.__proxy = proxy
 
 
-# описание всей страницы
 class Page(_Base):
 
     __area__ = None
@@ -315,7 +308,6 @@ class Page(_Base):
 
         if self.__api_class__:
             self.__api = self.__api_class__(self)
-            print(self.__api, 'page')
         else:
             self.__api = None
 
@@ -330,7 +322,6 @@ class Page(_Base):
                 raise TypeError(
                     '"__area__" can be instance of QueryObject only',
                 )
-            print('hey')
             return self.__area__(self._proxy).first()
 
         return self._proxy
@@ -351,14 +342,8 @@ class Page(_Base):
         self._proxy.browser.refresh()
 
 
-# отдельный элемент на странице, допуститм input c name='q'
 class PageItem(_Base):
 
-    # описывает PageItem
-    # selenium.query(
-    #     selenium.query.DIV,
-    #     id='top-menu',
-    # )
     __area__ = None
     __nested__ = True
 
@@ -380,5 +365,3 @@ class PageItem(_Base):
             return self.__area__(proxy).first()
 
         return proxy
-
-# file:///home/temirlan/TP3_SEM/QA/seismograph/docs/_build/html/selenium_page_object.html
