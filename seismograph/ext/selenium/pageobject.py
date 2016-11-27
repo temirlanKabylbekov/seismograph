@@ -98,13 +98,16 @@ class PageElement(object):
             )
 
         if self.__call:
+            print('CALL')
             if self.__list_class:
+                print('HEYO')
                 self.__list_class = type(
                     self.__list_class.__name__,
                     (self.__list_class, ),
                     {'__call__': self.__call},
                 )
             elif self.__we_class and not self.__is_list:
+                print('BRATAN')
                 self.__we_class = type(
                     self.__we_class.__name__,
                     (self.__we_class, ),
@@ -112,6 +115,7 @@ class PageElement(object):
                 )
             else:
                 if self.__is_list:
+                    print('ETO BASHORTOSTAN')
                     self.__list_class = type(
                         'CallableObject',
                         (ProxyObject, ),
@@ -252,6 +256,7 @@ class PageMeta(type):
 
         for atr_name, page_object in page_objects:
             if key(page_object):
+                print('jjfdffddfdf')
                 cls.__dct__[key(page_object)] = atr_name
 
         return cls
@@ -310,6 +315,7 @@ class Page(_Base):
 
         if self.__api_class__:
             self.__api = self.__api_class__(self)
+            print(self.__api, 'page')
         else:
             self.__api = None
 
@@ -324,6 +330,7 @@ class Page(_Base):
                 raise TypeError(
                     '"__area__" can be instance of QueryObject only',
                 )
+            print('hey')
             return self.__area__(self._proxy).first()
 
         return self._proxy

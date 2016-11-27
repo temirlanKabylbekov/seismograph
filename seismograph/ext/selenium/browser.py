@@ -2,7 +2,6 @@
 
 from contextlib import contextmanager
 
-# ASK: что такое WebDriverProxy
 from .proxy import WebDriverProxy
 
 
@@ -14,22 +13,7 @@ DEFAULT_SCRIPT_TIMEOUT = None
 DEFAULT_MAXIMIZE_WINDOW = True
 DEFAULT_WINDOW_SIZE = None
 
-# BrowserConfig(selenium, driver)
-# attributes:
-# ASK: PROJECT_URL,
-# ASK: POLLING_DELAY,
-# ASK: POLLING_TIMEOUT,
 
-# PAGE_LOAD_TIMEOUT - время ожидания загрузки страницы
-# SCRIPT_TIMEOUT, - время ожидания выполнения скрипта, если бы он был запущен асинхронно
-# WAIT_TIMEOUT - время для выполнения команды или поиска элемента на странице
-# WINDOW_SIZE - размеры экрана браузера
-
-# ASK: MAXIMIZE_WINDOW - не принимает новые геом параметры экрана self.__driver.maximize_window()
-# ASK: IGNORE_STALE_ELEMENT
-
-
-# TEST
 def create(selenium, driver):
     browser = WebDriverProxy(
         driver,
@@ -79,8 +63,6 @@ def change_config(browser,
             browser.config.PAGE_LOAD_TIMEOUT = to_restore['page_load_timeout']
 
 
-# TEST: Протестить создание объекта класса
-# Как тестировать создание инстанса класса?
 class BrowserConfig(object):
 
     def __init__(self, selenium, driver):
@@ -173,5 +155,3 @@ class BrowserConfig(object):
         if value and not self.__WINDOW_SIZE:
             self.__MAXIMIZE_WINDOW = value
             self.__driver.maximize_window()
-
-# file:///home/temirlan/TP3_SEM/QA/seismograph/docs/_build/html/selenium_browser.html

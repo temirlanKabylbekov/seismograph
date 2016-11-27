@@ -13,15 +13,25 @@ def re_raise_exc(callback=None, exc_cls=ReRaiseException, message=None):
     """
     Decorator for except any exception and reraise it.
     """
+    print('hello 1')
+
     def wrapper(f):
+        print('wrapper')
+
         @wraps(f)
         def wrapped(*args, **kwargs):
+            print('wrapped')
             try:
+                print('hello 5')
                 return f(*args, **kwargs)
             except BaseException as e:
+                print('exception')
                 orig_message = pyv.get_exc_message(e)
+                print(orig_message, 'test')
+                print(message, 'pass')
 
                 if message:
+                    print('hey', 'test')
                     new_message = u'{}{}'.format(
                         message, u' (from {}: {})'.format(e.__class__.__name__, orig_message)
                         if orig_message else
@@ -31,12 +41,13 @@ def re_raise_exc(callback=None, exc_cls=ReRaiseException, message=None):
                     new_message = orig_message
 
                 raise exc_cls(new_message)
-
+        print('hello 4')
         return wrapped
 
     if callable(callback):
+        print('hello 2')
         return wrapper(callback)
-
+    print('hello 3')
     return wrapper
 
 

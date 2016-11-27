@@ -19,8 +19,6 @@ DEFAULT_GET_BROWSER_DELAY = 0.5
 DEFAULT_GET_BROWSER_TIMEOUT = 10
 DEFAULT_BROWSER = drivers.FIREFOX
 
-# DesiredCapabilities - задает параметры браузера
-# {'platform': 'ANY', 'browserName': 'firefox', 'version': '', 'marionette': True, 'javascriptEnabled': True} 
 DRIVER_TO_CAPABILITIES = {
     drivers.OPERA: DesiredCapabilities.OPERA,
     drivers.CHROME: DesiredCapabilities.CHROME,
@@ -40,26 +38,20 @@ def get_capabilities(driver_name):
     try:
         return DRIVER_TO_CAPABILITIES[driver_name]
     except KeyError:
-        # ASK: зачем он ищет вхождение подстроку driver_name в другой строке
         raise SeleniumExError(
-            'Capabilities for driver "{}" is not found'.find(driver_name),
+            'Capabilities for driver "{}" is not found'.format(driver_name),
         )
 
 
 class Selenium(object):
 
-    # !передаем только config
-    # (browser_name, browser, is_running нет - их указываем в start или берем из config)
     def __init__(self, config):
         self.__config = config
 
-        # ASK: где он инициализируется
         self.__browser = None
         self.__is_running = False
         self.__browser_name = None
 
-    # эти 2 метода для возможности использования внутри
-    # конструкции with (enter при инициализации через as, exit при выходе)
     def __enter__(self):
         self.start()
         return self.__browser
@@ -67,22 +59,18 @@ class Selenium(object):
     def __exit__(self, *args, **kwargs):
         self.stop()
 
-    # getter self.config => self.__config
     @property
     def config(self):
         return self.__config
 
-    # getter
     @property
     def browser(self):
         return self.__browser
 
-    # getter
     @property
     def browser_name(self):
         return self.__browser_name
 
-    # getter
     @property
     def is_running(self):
         return self.__is_running
@@ -115,18 +103,11 @@ class Selenium(object):
             timeout = timeout or self.__config.get(
                 'POLLING_TIMEOUT', DEFAULT_GET_BROWSER_TIMEOUT,
             )
-
-            # вызов функции get_local_browser или self.remote с aргументом browser_name
-            # get_local_browser возвращает просто название браузера
             args = {
                 True: (self.remote, self.__browser_name),
                 False: (get_local_browser, self.__browser_name),
             }
-
-            # функция get_browser вызывается c args и kwargs до тех пор, пока не вызывается 
-            # повторы вызова c шагом delay
-            # и общем временем попыток вызова timeout
-            # иначе выкинет иссключение exc_cls=SeleniumExError с message
+            from seismograph.utils.common import waiting_for
             self.__browser = waiting_for(
                 get_browser,
                 delay=delay,
@@ -149,7 +130,6 @@ class Selenium(object):
 
     def remote(self, driver_name):
         driver_name = driver_name.lower()
-        # FIX: .get('REMOTE', default_value_needed)
         remote_config = self.__config.get('REMOTE')
 
         if not remote_config:
@@ -161,23 +141,14 @@ class Selenium(object):
             'Remote config: {}'.format(str(remote_config)),
         )
 
-        # FIX: .get('desired_capabilities', default_value_needed)
         if not remote_config.get('desired_capabilities'):
             capabilities = get_capabilities(driver_name)
-            # FIX: remote_config.pop('capabilities', {}) - удаляет пару key-value
-            # и возвращает value (видимо, должен быть словарем), а если не словарь 
-            # (к примеру list, тогда .get(driver_name, {}) сломается
-            # get(driver_name, {}) может быть не словарем, тогда capabilities.update(
-            # сломется
-
             capabilities.update(
                 remote_config.pop('capabilities', {}).get(driver_name, {}),
             )
             remote_config['desired_capabilities'] = capabilities
 
-        # ASK: что делает drivers.RemoteWebDriver
         driver = drivers.RemoteWebDriver(**remote_config)
-        # ASK: откуда взялся browser
         return browser.create(self, driver)
 
     def ie(self):
@@ -216,6 +187,10 @@ class Selenium(object):
     def firefox(self):
         firefox_config = self.__config.get('FIREFOX', {})
 
+        if not firefox_config:
+            raise SeleniumExError(
+                'settings for firefox browser is not found in config',
+            )
         logger.debug(
             'Firefox config: {}'.format(str(firefox_config)),
         )

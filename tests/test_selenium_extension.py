@@ -236,22 +236,22 @@ class SeleniumTestCase(unittest.TestCase):
             'settings for firefox browser is not found in config' in context.exception
         )
 
-    @unittest.skip('don\'t physically open local browser(debug purpose)')
-    def test_firefox_webdriver_init(self):
-        """Test `firefox` method.
+    # @unittest.skip('don\'t physically open local browser(debug purpose)')
+    # def test_firefox_webdriver_init(self):
+    #     """Test `firefox` method.
 
-        Note:
-            Test to create web driver by given firefox config.
+    #     Note:
+    #         Test to create web driver by given firefox config.
 
-        """
-        selenium_config = MagicMock()
-        with patch('seismograph.ext.selenium.browser.create') as browser_create_mock:
-            browser_create_mock.return_value(None)
-            s = Selenium(selenium_config)
-            try:
-                s.firefox()
-            except WebDriverException:
-                self.fail('firefox driver fails to create')
+    #     """
+    #     selenium_config = MagicMock()
+    #     with patch('seismograph.ext.selenium.browser.create') as browser_create_mock:
+    #         browser_create_mock.return_value(None)
+    #         s = Selenium(selenium_config)
+    #         try:
+    #             s.firefox()
+    #         except WebDriverException:
+    #             self.fail('firefox driver fails to create')
 
     @patch('seismograph.ext.selenium.browser.create')
     @patch('seismograph.ext.selenium.drivers.FirefoxWebDriver')
@@ -357,35 +357,41 @@ class SeleniumTestCase(unittest.TestCase):
             'capabilities' not in mock_config.get('REMOTE')
         )
 
-    @unittest.skip('don\'t physically connect to remote browser (debug purpose)')
-    def test_remote_webdriver_init(self):
-        """Test `remote` method.
+    # @unittest.skip('don\'t physically connect to remote browser (debug purpose)')
+    # def test_remote_webdriver_init(self):
+    #     """Test `remote` method.
 
-        Note:
-            Test to create web driver by given remote browser config.
+    #     Note:
+    #         Test to create web driver by given remote browser config.
 
-        """
-        selenium_config = {
-            'REMOTE': {
-                'desired_capabilities': DRIVER_TO_CAPABILITIES[DEFAULT_BROWSER]
-            }
-        }
-        mock_config = MagicMock()
-        mock_config.get.side_effect = selenium_config.get
+    #     """
+    #     selenium_config = {
+    #         'REMOTE': {
+    #             'desired_capabilities': DRIVER_TO_CAPABILITIES[DEFAULT_BROWSER]
+    #         }
+    #     }
+    #     mock_config = MagicMock()
+    #     mock_config.get.side_effect = selenium_config.get
 
-        with patch('seismograph.ext.selenium.browser.create') as browser_create_mock:
-            browser_create_mock.return_value(None)
-            s = Selenium(mock_config)
-            try:
-                s.remote(DEFAULT_BROWSER)
-            except WebDriverException:
-                self.fail('remote driver fails to create')
+    #     with patch('seismograph.ext.selenium.browser.create') as browser_create_mock:
+    #         browser_create_mock.return_value(None)
+    #         s = Selenium(mock_config)
+    #         try:
+    #             s.remote(DEFAULT_BROWSER)
+    #         except WebDriverException:
+    #             self.fail('remote driver fails to create')
 
 
 class StandaloneFunctionsTestCase(unittest.TestCase):
     """Tests for standalone functions in `extension.py` module.
 
     """
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
     def test_get_capabilities_pass_valid_driver(self):
         self.assertEqual(
             get_capabilities(DEFAULT_BROWSER),
