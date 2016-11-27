@@ -9,6 +9,146 @@ from seismograph.ext.selenium.extension import Selenium, DEFAULT_BROWSER, \
 from seismograph.ext.selenium.exceptions import SeleniumExError
 
 
+class SeleniumStartMethodTestCase(unittest.TestCase):
+    """Tests for `Selenium` class `start` method.
+
+    """
+    def setUp(self):
+        selenium_config = MagicMock()
+        self.selenium = Selenium(selenium_config)
+
+    def tearDown(self):
+        pass
+
+    # TO CODE REVIEWER: мок waiting_for работает только для абсолютного
+    # импорта waiting_for в модуле extension.py,
+    # в случае текущего импорта - относительного, мок не работает!
+    # в чем причина и как быть в случае относительного импорта?
+    @patch('seismograph.utils.common.waiting_for')
+    def test_start_check_setting_browser_name(self, mock_waiting_for):
+        """Test for `start` method.
+
+        Note:
+            Test to set `browser_name` via passing arg in this method.
+
+        """
+        mock_waiting_for.return_value = None
+        browser_name = 'chrome'
+        self.selenium.start(browser_name=browser_name)
+        self.assertEqual(self.selenium._Selenium__browser_name, browser_name)
+
+    @patch('seismograph.utils.common.waiting_for')
+    def test_start_check_setting_delay(self, mock_waiting_for):
+        """Test for `start` method.
+
+        Note:
+            Test to set `delay` and pass like arg to `waiting_for` function.
+
+        """
+        mock_waiting_for.return_value = None
+        browser_delay = 7
+        self.selenium.start(delay=browser_delay)
+        args, kwargs = mock_waiting_for.call_args
+        self.assertEqual(kwargs['delay'], browser_delay)
+
+    @patch('seismograph.utils.common.waiting_for')
+    def test_start_check_setting_timeout(self, mock_waiting_for):
+        """Test for `start` method.
+
+        Note:
+            Test to set `timeout` and pass like arg to `waiting_for` function.
+
+        """
+        mock_waiting_for.return_value = None
+        browser_timeout = 88
+        self.selenium.start(timeout=browser_timeout)
+        args, kwargs = mock_waiting_for.call_args
+        self.assertEqual(kwargs['timeout'], browser_timeout)
+
+    # TO CODE REVIEWER: есть ли возможность замокать вложенную функцию, объявленной 
+    # внутри другой функции. stackoverflow говорит, что нет, но мне 
+    # что-то подсказывает, что можно
+    def test_start_check_get_local_browser_with_invalid_browser_name(self):
+        """Test `start` method.
+
+        Note:
+            Test nested function `get_local_browser` by passing invalid
+            browser name.
+
+        """
+        pass
+
+    def test_start_check_get_local_browser_with_valid_browser_name(self):
+        """Test `start` method.
+
+        Note:
+            Test nested function `get_local_browser` by passing valid
+            browser name.
+
+        """
+        pass
+
+    @patch('seismograph.utils.common.waiting_for')
+    def test_start_check_is_running_equals_true(self, mock_waiting_for):
+        """Test `start` method.
+
+        Note:
+            Test that `is_running` class attribute equals `True` after
+            executing `start` method.
+
+        """
+        mock_waiting_for.return_value = None
+        self.selenium.start()
+        self.assertTrue(self.selenium.is_running)
+
+
+class SeleniumStartMethodCallBrowserTestCase(unittest.TestCase):
+    """Tests for `Selenium` class `start` method calling browser.
+
+    """
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    @patch('seismograph.utils.common.waiting_for', return_value=None)
+    def test_start_check_calling_remote_browser(self, mock_waiting_for):
+        """"Test `start` method.
+
+        Note:
+            Test calling remote browser when passing
+            `USE_REMOTE` true flag in selenium config file.
+
+        """
+        selenium_config = {'USE_REMOTE': True}
+        mock = MagicMock()
+        mock.get.side_effect = selenium_config.get
+
+        s = Selenium(mock)
+        s.start()
+        args, kwargs = mock_waiting_for.call_args
+        self.assertEqual(kwargs['args'][0].__name__, 'remote')
+
+    @patch('seismograph.utils.common.waiting_for', return_value=None)
+    def test_start_check_calling_local_browser(self, mock_waiting_for):
+        """"Test `start` method.
+
+        Note:
+            Test calling local browser when passing
+            `USE_REMOTE` false flag in selenium config file.
+
+        """
+        selenium_config = {'USE_REMOTE': False}
+        mock = MagicMock()
+        mock.get.side_effect = selenium_config.get
+
+        s = Selenium(mock)
+        s.start()
+        args, kwargs = mock_waiting_for.call_args
+        self.assertEqual(kwargs['args'][0].__name__, 'get_local_browser')
+
+
 class SeleniumTestCase(unittest.TestCase):
     """Tests for `Selenium` class.
 
@@ -20,90 +160,26 @@ class SeleniumTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_start_check_setting_browser_name(self):
-        # TODO
-        pass
-
-    def test_start_check_setting_delay(self):
-        # TODO
-        pass
-
-    def test_start_check_setting_timeout(self):
-        # TODO
-        pass
-
-    def test_start_check_get_local_browser_with_invalid_browser_name(self):
-        # TODO
-        pass
-
-    def test_start_check_get_local_browser_with_valid_browser_name(self):
-        # TODO
-        pass
-
-    def test_start_check_calling_remote_browser(self):
-        # TODO
-        pass
-
-    def test_start_check_calling_local_browser(self):
-        # TODO
-        pass
-
-    # TODO
-    # @patch('seismograph.ext.selenium.extension.get_capabilities')
-    # @patch('seismograph.utils.common.waiting_for')
-    # def test_start_check_is_running_equals_true(self, mock_waiting_for, mock):
-    #     """Test `start` method.
-
-    #     Note:
-    #         Test that `is_running` class attribute equals `True` after
-    #         executing `start` method.
-
-    #     """
-    #     mock_selenium_config = MagicMock()
-    #     s = Selenium(mock_selenium_config)
-
-    #     mock_waiting_for.return_value = 'browser'
-    #     mock.return_value = 'hello_________________'
-    #     s.start()
-
     # test `stop` method
-    # def test_stop_check_close_and_quit_executed(self):
-    #     """Test `stop` method.
+    def test_stop_check_close_and_quit_executed(self):
+        """Test `stop` method.
 
-    #     Note:
-    #         Test that `close` and `quit` methods were executed.
+        Note:
+            Test that `close` and `quit` methods were executed.
 
-    #     """
-    #     mock_selenium_config = MagicMock()
-    #     s = Selenium(mock_selenium_config)
-    #     setattr(s, '_Selenium__is_running', True)
+        """
+        selenium_config = MagicMock()
+        selenium = Selenium(selenium_config)
+        setattr(selenium, '_Selenium__is_running', True)
 
-    #     mock_browser_attr = MagicMock()
-    #     mock_browser_attr.close = MagicMock(return_value='close')
-    #     mock_browser_attr.quit = MagicMock(return_value='quit')
-    #     setattr(s, '_Selenium__browser', mock_browser_attr)
-    #     s.stop()
-    #     print(mock_browser_attr)
-    #     mock_selenium_config = MagicMock()
-    #     s = Selenium(mock_selenium_config)
-    #     with patch('seismograph.utils.common.waiting_for') as mock_waiting_for:
-    #         mock_browser_attr = MagicMock()
-    #         mock_waiting_for.return_value(mock_browser_attr)
-    #         mock_browser_attr.close = MagicMock(name='close')
-    #         mock_browser_attr.quit = MagicMock(name='quit')
-    #         s.start()
-    #         print(mock_waiting_for.call_args)
+        browser = MagicMock()
+        browser.close = MagicMock()
+        browser.quit = MagicMock()
+        setattr(selenium, '_Selenium__browser', browser)
 
-    #     mock_browser_attr = MagicMock()
-    #     mock_browser_attr.close = MagicMock(name='close')
-    #     mock_browser_attr.quit = MagicMock(name='quit')
-    #     s.browser = 5
-    #     setattr(s, 'browser', mock_browser_attr)
-    #     s.stop()
-    #     with patch.object(s, '_Selenium__is_running', return_value=True) as mock_running_attr:
-    #         mock_browser_attr.close = MagicMock(name='close')
-    #         mock_browser_attr.quit = MagicMock(name='quit')
-    #         s.stop()
+        selenium.stop()
+
+        self.assertTrue(browser.close.called and browser.quit.called)
 
     def test_stop_check_is_running_equals_false(self):
         """Test `stop` method.
@@ -118,6 +194,10 @@ class SeleniumTestCase(unittest.TestCase):
         setattr(s, '_Selenium__browser', MagicMock())
         s.stop()
         self.assertEqual(s.is_running, False)
+
+    # TO CODE REVIEWER: поскольку, для других локальных браузеров тесты
+    # будут одинаковыми, то не стали писать для них тесты. Ограничились
+    # одним браузером firefox
 
     # tests for `firefox` method
     def test_firefox_with_empty_firefox_config(self):
@@ -156,6 +236,7 @@ class SeleniumTestCase(unittest.TestCase):
             'settings for firefox browser is not found in config' in context.exception
         )
 
+    @unittest.skip('don\'t physically open local browser(debug purpose)')
     def test_firefox_webdriver_init(self):
         """Test `firefox` method.
 
@@ -248,12 +329,12 @@ class SeleniumTestCase(unittest.TestCase):
 
     @patch('seismograph.ext.selenium.browser.create')
     @patch('seismograph.ext.selenium.drivers.RemoteWebDriver')
-    def test_remote_set_desired_capabilities_config(
+    def test_remote_remove_capabilities_config_after_setting_desired(
             self, webdriver_create_mock, browser_create_mock):
         """Test `remote` method.
 
         Note:
-            Test removing `capabilities` after setting `desired_capabilities` in 
+            Test removing `capabilities` after setting `desired_capabilities` in
             remote browser config with this empty property.
 
         """
@@ -276,6 +357,7 @@ class SeleniumTestCase(unittest.TestCase):
             'capabilities' not in mock_config.get('REMOTE')
         )
 
+    @unittest.skip('don\'t physically connect to remote browser (debug purpose)')
     def test_remote_webdriver_init(self):
         """Test `remote` method.
 
