@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from mock import MagicMock
+from mock import MagicMock, patch
 
 from selenium.webdriver.remote.webdriver import WebDriver
 from seismograph.ext.selenium.browser import BrowserConfig, create, change_config
@@ -216,6 +216,11 @@ class CreateFunctionTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
+    # TO CODE REVIEWER: мок внутренней функции WebDriverProxy не работает! Если
+    # заимпортить WebDriverProxy в модуле абсолютным путем:
+    # from seismograph.ext.selenium.proxy import WebDriverProxy
+    # работает. Как замокать, если в модуле относительный импорт
+    # from .proxy import WebDriverProxy?
     def test_create_check_set_reason_storage(self):
         """Test function `create`.
 
@@ -223,27 +228,22 @@ class CreateFunctionTestCase(unittest.TestCase):
             Test setting `browser_name` for `reason_storage`.
 
         """
-        pass
-        # TODO
-        # selenium = MagicMock()
-        # selenium.side_effect = Selenium
-        # selenium = selenium.side_effect(MagicMock())
-        # setattr(selenium, '_Selenium__browser_name', DEFAULT_BROWSER)
+        with patch('seismograph.ext.selenium.proxy.WebDriverProxy') as mock_driver_proxy:
+            d = dict()
+            browser = MagicMock()
+            browser.reason_storage.__setitem__.side_effect = d.__setitem__
+            browser.reason_storage.__getitem__.side_effect = d.__getitem__
 
-        # driver = MagicMock(spec=WebDriver)
+            mock_driver_proxy.return_value = browser
+            selenium = Selenium(MagicMock())
+            setattr(selenium, '_Selenium__browser_name', DEFAULT_BROWSER)
 
-        # browser = MagicMock()
-        # browser.side_effect = WebDriverProxy
-        # browser = browser.side_effect(
-        #     driver, config=BrowserConfig(selenium, driver)
-        # )
-        # browser.reason_storage.__setitem__ = dict().__setitem__
-        # browser.reason_storage.__getitem__ = dict().__getitem__
+            driver = MagicMock(spec=WebDriver)
 
-        # # with patch('seismograph.ext.selenium.proxy.WebDriverProxy') as mock_driver_proxy:
-        # #     print(mock_driver_proxy, 'test')
-        # #     mock_driver_proxy.return_value = browser
-        # create(selenium, driver)
+            returned_browser = create(selenium, driver)
+            self.assertEqual(
+                returned_browser.reason_storage['browser name'], DEFAULT_BROWSER
+            )
 
 
 def main():
