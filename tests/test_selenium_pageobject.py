@@ -5,7 +5,7 @@ from mock import MagicMock, patch, PropertyMock
 
 from seismograph.ext.selenium.pageobject import ProxyObject, PageCache, \
     PageMeta, PageElement, _Base, Page, PageItem
-from seismograph.ext.selenium.query import QueryObject
+from seismograph.ext.selenium.query import QueryObject, QueryResult
 
 
 # nothing important to test
@@ -281,9 +281,83 @@ class PageElementTestCase(unittest.TestCase):
         # TODO
         pass
 
-    def test_make_object(self):
-        # TODO
-        pass
+    def test_make_object_get_from_cache(self):
+        """Test `__make_object__` method.
+
+        Note:
+            Test to get result from page cache
+
+        """
+        with patch(
+                'seismograph.ext.selenium.pageobject.Page.cache',
+                new_callable=PropertyMock) as mock_page_cache:
+            page = Page()
+
+            page_element = PageElement(dict)
+            mock_page_cache.return_value = {id(page_element): 'result'}
+            setattr(page_element, '_PageElement__cached', True)
+
+            self.assertEqual(page_element.__make_object__(page), 'result')
+
+    def test_make_object_not_in_cache_and_class_is_defined(self):
+        """Test `__make_object__` method.
+
+        Note:
+            Test to get the result by calling `_class` function
+            with `page.area` arg.
+
+        """
+        with patch(
+                'seismograph.ext.selenium.pageobject.Page.area',
+                new_callable=PropertyMock) as mock_page_area:
+            page = Page()
+
+            page_element = PageElement(dict)
+
+            mock_page_area.return_value = range(100)
+            setattr(page_element, '_PageElement__cached', False)
+            setattr(page_element, '_PageElement__class', len)
+
+            self.assertEqual(page_element.__make_object__(page), 100)
+
+    def test_get_list_class_defined(self):
+        """Test `__get__` method.
+
+        Note:
+            Test when `__list_class` specified.
+
+        """
+        page_element = PageElement(dict)
+        setattr(page_element, '_PageElement__list_class', MagicMock(return_value='result'))
+        self.assertEqual(
+            page_element.__get__(MagicMock(), MagicMock()), 'result'
+        )
+
+    def test_get_list_property_defined(self):
+        """Test `__get__` method.
+
+        Note:
+            Test when `__property` specified.
+
+        """
+        page_element = PageElement(dict)
+        setattr(page_element, '_PageElement__property', MagicMock(return_value='result'))
+        self.assertEqual(
+            page_element.__get__(MagicMock(), MagicMock()), 'result'
+        )
+
+    def test_get_list_we_class_defined_and_is_list_not_defined(self):
+        """Test `__get__` method.
+
+        Note:
+            Test when `__we_class` specified and `__is_list` don't.
+
+        """
+        page_element = PageElement(dict)
+        setattr(page_element, '_PageElement__we_class', MagicMock(return_value='result'))
+        self.assertEqual(
+            page_element.__get__(MagicMock(), MagicMock()), 'result'
+        )
 
 
 class PageElementMethodsThrowExceptionTestCase(unittest.TestCase):
