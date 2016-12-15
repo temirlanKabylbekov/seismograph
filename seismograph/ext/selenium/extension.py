@@ -107,7 +107,7 @@ class Selenium(object):
                 True: (self.remote, self.__browser_name),
                 False: (get_local_browser, self.__browser_name),
             }
-            from seismograph.utils.common import waiting_for
+
             self.__browser = waiting_for(
                 get_browser,
                 delay=delay,

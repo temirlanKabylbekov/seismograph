@@ -216,11 +216,6 @@ class CreateFunctionTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    # TO CODE REVIEWER: мок внутренней функции WebDriverProxy не работает! Если
-    # заимпортить WebDriverProxy в модуле абсолютным путем:
-    # from seismograph.ext.selenium.proxy import WebDriverProxy
-    # работает. Как замокать, если в модуле относительный импорт
-    # from .proxy import WebDriverProxy?
     def test_create_check_set_reason_storage(self):
         """Test function `create`.
 

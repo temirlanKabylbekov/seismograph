@@ -20,11 +20,7 @@ class SeleniumStartMethodTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    # TO CODE REVIEWER: мок waiting_for работает только для абсолютного
-    # импорта waiting_for в модуле extension.py,
-    # в случае текущего импорта - относительного, мок не работает!
-    # в чем причина и как быть в случае относительного импорта?
-    @patch('seismograph.utils.common.waiting_for')
+    @patch('seismograph.ext.selenium.extension.waiting_for')
     def test_start_check_setting_browser_name(self, mock_waiting_for):
         """Test for `start` method.
 
@@ -37,7 +33,7 @@ class SeleniumStartMethodTestCase(unittest.TestCase):
         self.selenium.start(browser_name=browser_name)
         self.assertEqual(self.selenium._Selenium__browser_name, browser_name)
 
-    @patch('seismograph.utils.common.waiting_for')
+    @patch('seismograph.ext.selenium.extension.waiting_for')
     def test_start_check_setting_delay(self, mock_waiting_for):
         """Test for `start` method.
 
@@ -51,7 +47,7 @@ class SeleniumStartMethodTestCase(unittest.TestCase):
         args, kwargs = mock_waiting_for.call_args
         self.assertEqual(kwargs['delay'], browser_delay)
 
-    @patch('seismograph.utils.common.waiting_for')
+    @patch('seismograph.ext.selenium.extension.waiting_for')
     def test_start_check_setting_timeout(self, mock_waiting_for):
         """Test for `start` method.
 
@@ -65,30 +61,7 @@ class SeleniumStartMethodTestCase(unittest.TestCase):
         args, kwargs = mock_waiting_for.call_args
         self.assertEqual(kwargs['timeout'], browser_timeout)
 
-    # TO CODE REVIEWER: есть ли возможность замокать вложенную функцию, объявленной 
-    # внутри другой функции. stackoverflow говорит, что нет, но мне 
-    # что-то подсказывает, что можно
-    def test_start_check_get_local_browser_with_invalid_browser_name(self):
-        """Test `start` method.
-
-        Note:
-            Test nested function `get_local_browser` by passing invalid
-            browser name.
-
-        """
-        pass
-
-    def test_start_check_get_local_browser_with_valid_browser_name(self):
-        """Test `start` method.
-
-        Note:
-            Test nested function `get_local_browser` by passing valid
-            browser name.
-
-        """
-        pass
-
-    @patch('seismograph.utils.common.waiting_for')
+    @patch('seismograph.ext.selenium.extension.waiting_for')
     def test_start_check_is_running_equals_true(self, mock_waiting_for):
         """Test `start` method.
 
@@ -112,7 +85,7 @@ class SeleniumStartMethodCallBrowserTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @patch('seismograph.utils.common.waiting_for', return_value=None)
+    @patch('seismograph.ext.selenium.extension.waiting_for', return_value=None)
     def test_start_check_calling_remote_browser(self, mock_waiting_for):
         """"Test `start` method.
 
@@ -130,7 +103,7 @@ class SeleniumStartMethodCallBrowserTestCase(unittest.TestCase):
         args, kwargs = mock_waiting_for.call_args
         self.assertEqual(kwargs['args'][0].__name__, 'remote')
 
-    @patch('seismograph.utils.common.waiting_for', return_value=None)
+    @patch('seismograph.ext.selenium.extension.waiting_for', return_value=None)
     def test_start_check_calling_local_browser(self, mock_waiting_for):
         """"Test `start` method.
 
@@ -179,7 +152,8 @@ class SeleniumTestCase(unittest.TestCase):
 
         selenium.stop()
 
-        self.assertTrue(browser.close.called and browser.quit.called)
+        self.assertTrue(browser.close.called)
+        self.assertTrue(browser.quit.called)
 
     def test_stop_check_is_running_equals_false(self):
         """Test `stop` method.
@@ -193,11 +167,7 @@ class SeleniumTestCase(unittest.TestCase):
         setattr(s, '_Selenium__is_running', True)
         setattr(s, '_Selenium__browser', MagicMock())
         s.stop()
-        self.assertEqual(s.is_running, False)
-
-    # TO CODE REVIEWER: поскольку, для других локальных браузеров тесты
-    # будут одинаковыми, то не стали писать для них тесты. Ограничились
-    # одним браузером firefox
+        self.assertFalse(s.is_running)
 
     # tests for `firefox` method
     def test_firefox_with_empty_firefox_config(self):
@@ -214,8 +184,8 @@ class SeleniumTestCase(unittest.TestCase):
         s = Selenium(mock)
         with self.assertRaises(SeleniumExError) as context:
             s.firefox()
-        self.assertTrue(
-            'settings for firefox browser is not found in config' in context.exception
+        self.assertIn(
+            'settings for firefox browser is not found in config', context.exception
         )
 
     def test_firefox_with_lack_firefox_config(self):
@@ -232,26 +202,9 @@ class SeleniumTestCase(unittest.TestCase):
         s = Selenium(mock)
         with self.assertRaises(SeleniumExError) as context:
             s.firefox()
-        self.assertTrue(
-            'settings for firefox browser is not found in config' in context.exception
+        self.assertIn(
+            'settings for firefox browser is not found in config', context.exception
         )
-
-    @unittest.skip('don\'t physically open local browser(debug purpose)')
-    def test_firefox_webdriver_init(self):
-        """Test `firefox` method.
-
-        Note:
-            Test to create web driver by given firefox config.
-
-        """
-        selenium_config = MagicMock()
-        with patch('seismograph.ext.selenium.browser.create') as browser_create_mock:
-            browser_create_mock.return_value(None)
-            s = Selenium(selenium_config)
-            try:
-                s.firefox()
-            except WebDriverException:
-                self.fail('firefox driver fails to create')
 
     @patch('seismograph.ext.selenium.browser.create')
     @patch('seismograph.ext.selenium.drivers.FirefoxWebDriver')
@@ -301,8 +254,8 @@ class SeleniumTestCase(unittest.TestCase):
         s = Selenium(mock_config)
         with self.assertRaises(SeleniumExError) as context:
             s.remote(mock_driver)
-        self.assertTrue(
-            'settings for remote is not found in config' in context.exception
+        self.assertIn(
+            'settings for remote is not found in config', context.exception
         )
 
     @patch('seismograph.ext.selenium.browser.create')
@@ -353,33 +306,277 @@ class SeleniumTestCase(unittest.TestCase):
         s = Selenium(mock_config)
         s.remote(DEFAULT_BROWSER)
 
-        self.assertTrue(
-            'capabilities' not in mock_config.get('REMOTE')
+        self.assertNotIn(
+            'capabilities', mock_config.get('REMOTE')
         )
 
-    @unittest.skip('don\'t physically connect to remote browser (debug purpose)')
-    def test_remote_webdriver_init(self):
-        """Test `remote` method.
+    # tests for `ie` method
+    def test_ie_with_empty_ie_config(self):
+        """Test `ie` method.
 
         Note:
-            Test to create web driver by given remote browser config.
+            Test to throw exception when ie config in general selenium config exists but is empty.
 
         """
-        selenium_config = {
-            'REMOTE': {
-                'desired_capabilities': DRIVER_TO_CAPABILITIES[DEFAULT_BROWSER]
-            }
-        }
-        mock_config = MagicMock()
-        mock_config.get.side_effect = selenium_config.get
+        selenium_config = {'IE': {}}
+        mock = MagicMock()
+        mock.get.side_effect = selenium_config.get
 
-        with patch('seismograph.ext.selenium.browser.create') as browser_create_mock:
-            browser_create_mock.return_value(None)
-            s = Selenium(mock_config)
-            try:
-                s.remote(DEFAULT_BROWSER)
-            except WebDriverException:
-                self.fail('remote driver fails to create')
+        s = Selenium(mock)
+        with self.assertRaises(SeleniumExError) as context:
+            s.ie()
+        self.assertIn(
+            'settings for ie browser is not found in config', context.exception
+        )
+
+    def test_ie_with_lack_ie_config(self):
+        """Test `ie` method.
+
+        Note:
+            Test to throw exception when ie config in general selenium config doesn't exist.
+
+        """
+        selenium_config = {}
+        mock = MagicMock()
+        mock.get.side_effect = selenium_config.get
+
+        s = Selenium(mock)
+        with self.assertRaises(SeleniumExError) as context:
+            s.ie()
+        self.assertIn(
+            'settings for ie browser is not found in config', context.exception
+        )
+
+    @patch('seismograph.ext.selenium.browser.create')
+    @patch('seismograph.ext.selenium.drivers.IeWebDriver')
+    def test_ie_browser_creating(self, webdriver_create_mock, browser_create_mock):
+        """Test `ie` method.
+
+        Note:
+            Test passing args to create browser.
+
+        """
+        selenium_config = MagicMock()
+        s = Selenium(selenium_config)
+        webdriver = webdriver_create_mock.return_value
+        browser_create_mock.return_value(None)
+        s.ie()
+        browser_create_mock.assert_called_once_with(s, webdriver)
+
+    @patch('seismograph.ext.selenium.browser.create')
+    @patch('seismograph.ext.selenium.drivers.IeWebDriver')
+    def test_ie_return_browser(self, webdriver_create_mock, browser_create_mock):
+        """Test `ie` method.
+
+        Note:
+            Test returning browser by `ie` method.
+
+        """
+        selenium_config = MagicMock()
+        s = Selenium(selenium_config)
+        browser = browser_create_mock.return_value
+        self.assertEqual(browser, s.ie())
+
+    # tests for `chrome` method
+    def test_chrome_with_empty_chrome_config(self):
+        """Test `chrome` method.
+
+        Note:
+            Test to throw exception when chrome config in general selenium config exists but is empty.
+
+        """
+        selenium_config = {'CHROME': {}}
+        mock = MagicMock()
+        mock.get.side_effect = selenium_config.get
+
+        s = Selenium(mock)
+        with self.assertRaises(SeleniumExError) as context:
+            s.chrome()
+        self.assertIn(
+            'settings for chrome browser is not found in config', context.exception
+        )
+
+    def test_chrome_with_lack_chrome_config(self):
+        """Test `chrome` method.
+
+        Note:
+            Test to throw exception when chrome config in general selenium config doesn't exist.
+
+        """
+        selenium_config = {}
+        mock = MagicMock()
+        mock.get.side_effect = selenium_config.get
+
+        s = Selenium(mock)
+        with self.assertRaises(SeleniumExError) as context:
+            s.chrome()
+        self.assertIn(
+            'settings for chrome browser is not found in config', context.exception
+        )
+
+    @patch('seismograph.ext.selenium.browser.create')
+    @patch('seismograph.ext.selenium.drivers.ChromeWebDriver')
+    def test_chrome_browser_creating(self, webdriver_create_mock, browser_create_mock):
+        """Test `chrome` method.
+
+        Note:
+            Test passing args to create browser.
+
+        """
+        selenium_config = MagicMock()
+        s = Selenium(selenium_config)
+        webdriver = webdriver_create_mock.return_value
+        browser_create_mock.return_value(None)
+        s.chrome()
+        browser_create_mock.assert_called_once_with(s, webdriver)
+
+    @patch('seismograph.ext.selenium.browser.create')
+    @patch('seismograph.ext.selenium.drivers.ChromeWebDriver')
+    def test_chrome_return_browser(self, webdriver_create_mock, browser_create_mock):
+        """Test `chrome` method.
+
+        Note:
+            Test returning browser by `chrome` method.
+
+        """
+        selenium_config = MagicMock()
+        s = Selenium(selenium_config)
+        browser = browser_create_mock.return_value
+        self.assertEqual(browser, s.chrome())
+
+    # tests for `opera` method
+    def test_opera_with_empty_opera_config(self):
+        """Test `opera` method.
+
+        Note:
+            Test to throw exception when opera config in general selenium config exists but is empty.
+
+        """
+        selenium_config = {'OPERA': {}}
+        mock = MagicMock()
+        mock.get.side_effect = selenium_config.get
+
+        s = Selenium(mock)
+        with self.assertRaises(SeleniumExError) as context:
+            s.opera()
+        self.assertIn(
+            'settings for opera browser is not found in config', context.exception
+        )
+
+    def test_opera_with_lack_opera_config(self):
+        """Test `opera` method.
+
+        Note:
+            Test to throw exception when opera config in general selenium config doesn't exist.
+
+        """
+        selenium_config = {}
+        mock = MagicMock()
+        mock.get.side_effect = selenium_config.get
+
+        s = Selenium(mock)
+        with self.assertRaises(SeleniumExError) as context:
+            s.opera()
+        self.assertIn(
+            'settings for opera browser is not found in config', context.exception
+        )
+
+    @patch('seismograph.ext.selenium.browser.create')
+    @patch('seismograph.ext.selenium.drivers.OperaWebDriver')
+    def test_opera_browser_creating(self, webdriver_create_mock, browser_create_mock):
+        """Test `opera` method.
+
+        Note:
+            Test passing args to create browser.
+
+        """
+        selenium_config = MagicMock()
+        s = Selenium(selenium_config)
+        webdriver = webdriver_create_mock.return_value
+        browser_create_mock.return_value(None)
+        s.opera()
+        browser_create_mock.assert_called_once_with(s, webdriver)
+
+    @patch('seismograph.ext.selenium.browser.create')
+    @patch('seismograph.ext.selenium.drivers.OperaWebDriver')
+    def test_opera_return_browser(self, webdriver_create_mock, browser_create_mock):
+        """Test `opera` method.
+
+        Note:
+            Test returning browser by `opera` method.
+
+        """
+        selenium_config = MagicMock()
+        s = Selenium(selenium_config)
+        browser = browser_create_mock.return_value
+        self.assertEqual(browser, s.opera())
+
+    # tests for `phantomjs` method
+    def test_phantomjs_with_empty_phantomjs_config(self):
+        """Test `phantomjs` method.
+
+        Note:
+            Test to throw exception when phantomjs config in general selenium config exists but is empty.
+
+        """
+        selenium_config = {'PHANTOMJS': {}}
+        mock = MagicMock()
+        mock.get.side_effect = selenium_config.get
+
+        s = Selenium(mock)
+        with self.assertRaises(SeleniumExError) as context:
+            s.phantomjs()
+        self.assertIn(
+            'settings for phantom js is not found in config', context.exception
+        )
+
+    def test_phantomjs_with_lack_phantomjs_config(self):
+        """Test `phantomjs` method.
+
+        Note:
+            Test to throw exception when phantomjs config in general selenium config doesn't exist.
+
+        """
+        selenium_config = {}
+        mock = MagicMock()
+        mock.get.side_effect = selenium_config.get
+
+        s = Selenium(mock)
+        with self.assertRaises(SeleniumExError) as context:
+            s.phantomjs()
+        self.assertIn(
+            'settings for phantom js is not found in config', context.exception
+        )
+
+    @patch('seismograph.ext.selenium.browser.create')
+    @patch('seismograph.ext.selenium.drivers.PhantomJSWebDriver')
+    def test_phantomjs_browser_creating(self, webdriver_create_mock, browser_create_mock):
+        """Test `phantomjs` method.
+
+        Note:
+            Test passing args to create browser.
+
+        """
+        selenium_config = MagicMock()
+        s = Selenium(selenium_config)
+        webdriver = webdriver_create_mock.return_value
+        browser_create_mock.return_value(None)
+        s.phantomjs()
+        browser_create_mock.assert_called_once_with(s, webdriver)
+
+    @patch('seismograph.ext.selenium.browser.create')
+    @patch('seismograph.ext.selenium.drivers.PhantomJSWebDriver')
+    def test_phantomjs_return_browser(self, webdriver_create_mock, browser_create_mock):
+        """Test `phantomjs` method.
+
+        Note:
+            Test returning browser by `phantomjs` method.
+
+        """
+        selenium_config = MagicMock()
+        s = Selenium(selenium_config)
+        browser = browser_create_mock.return_value
+        self.assertEqual(browser, s.phantomjs())
 
 
 class StandaloneFunctionsTestCase(unittest.TestCase):
@@ -402,9 +599,9 @@ class StandaloneFunctionsTestCase(unittest.TestCase):
         fake_driver_name = 'FAKE_DRIVER'
         with self.assertRaises(SeleniumExError) as context:
             get_capabilities(fake_driver_name)
-        self.assertTrue(
-            'Capabilities for driver "{}" is not found'.format(fake_driver_name)
-            in context.exception
+        self.assertIn(
+            'Capabilities for driver "{}" is not found'.format(fake_driver_name),
+            context.exception
         )
 
 
