@@ -20,7 +20,7 @@ class UtilsTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @patch('random.randint', return_value=500)
+    @patch('seismograph.ext.selenium.utils.randint', return_value=500)
     @patch('time.time', return_value=100500.1005)
     def test_random_file_name_check_algorithm(self, mock_time, mock_randint):
         """Test `random_file_name` function.
@@ -29,8 +29,8 @@ class UtilsTestCase(unittest.TestCase):
             Test algorithm to generate file name.
 
         """
-        # TO CODE REVIEWER: не получилось замокать random.randint. What is the problem?
-        self.assertTrue(100500 + 0 <= int(random_file_name()) <= 100500 + 1000)
+        expected_value = int(mock_randint.return_value + mock_time.return_value)
+        self.assertEqual(int(random_file_name()), expected_value)
 
     def test_change_name_from_python_to_html_startswith_underscore(self):
         """Test `change_name_from_python_to_html` function.
@@ -115,7 +115,7 @@ class UtilsTestCase(unittest.TestCase):
 
         with self.assertRaises(TypeError) as context:
             declare_standard_callback(stub_foo)
-            self.assertTrue('Incorrect signature of function' in context.exception)
+            self.assertIn('Incorrect signature of function', context.exception)
 
     def test_declare_standard_callback_pass_function_with_one_arg(self):
         """Test `declare_standard_callback` function.
@@ -156,7 +156,7 @@ class ReRaiseRxcTestCase(unittest.TestCase):
         with self.assertRaises(ReRaiseException) as context:
             wrapped = re_raise_exc(self.mock_foo)
             wrapped()
-        self.assertTrue(self.base_exception_message in context.exception)
+        self.assertIn(self.base_exception_message, context.exception)
 
     def test_re_raise_exc_specify_message(self):
         """Test `re_raise_exc` function.
@@ -178,7 +178,7 @@ class ReRaiseRxcTestCase(unittest.TestCase):
         with self.assertRaises(ReRaiseException) as context:
             wrapped = re_raise_exc(self.mock_foo, message=re_raise_exception_message)
             wrapped()
-        self.assertTrue(expected_message in context.exception)
+        self.assertIn(expected_message, context.exception)
 
     def test_re_raise_exc_specify_exception(self):
         """Test `re_raise_exc` function.
@@ -191,7 +191,7 @@ class ReRaiseRxcTestCase(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             wrapped = re_raise_exc(self.mock_foo, exc_cls=ValueError)
             wrapped()
-        self.assertTrue(self.base_exception_message in context.exception)
+        self.assertIn(self.base_exception_message, context.exception)
 
 
 def main():
