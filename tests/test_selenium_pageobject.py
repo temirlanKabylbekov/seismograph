@@ -5,7 +5,7 @@ from mock import MagicMock, patch, PropertyMock
 
 from seismograph.ext.selenium.pageobject import ProxyObject, PageCache, \
     PageMeta, PageElement, _Base, Page, PageItem
-from seismograph.ext.selenium.query import QueryObject, QueryResult
+from seismograph.ext.selenium.query import QueryObject
 
 
 # nothing important to test
@@ -87,8 +87,8 @@ class PageElementTestCase(unittest.TestCase):
         """
         with self.assertRaises(AssertionError) as context:
             page_element = PageElement()
-        self.assertTrue(
-            'Element can not be created without arguments' in context.exception
+        self.assertIn(
+            'Element can not be created without arguments', context.exception
         )
 
     def test_init_pass_class_instance_of_type(self):
@@ -154,8 +154,8 @@ class PageElementTestCase(unittest.TestCase):
 
         with self.assertRaises(ValueError) as context:
             page_element = PageElement(invalid_arg)
-        self.assertTrue(
-            'Incorrect page object argument {}'.format(invalid_arg) in
+        self.assertIn(
+            'Incorrect page object argument {}'.format(invalid_arg),
             context.exception
         )
 
@@ -266,20 +266,6 @@ class PageElementTestCase(unittest.TestCase):
         self.assertEqual(changed_we_class.__name__, 'CallableObject')
         self.assertEqual(changed_we_class.__bases__, (ProxyObject,))
         self.assertEqual(changed_we_class.__call__, 'call_value')
-
-    # test __key__
-    def test_key(self):
-        pass
-
-    # test __query_set__
-    def test_query_set(self):
-        # TODO
-        pass
-
-    # test __get__
-    def test_get(self):
-        # TODO
-        pass
 
     def test_make_object_get_from_cache(self):
         """Test `__make_object__` method.
@@ -393,8 +379,8 @@ class PageElementMethodsThrowExceptionTestCase(unittest.TestCase):
         """
         with self.assertRaises(TypeError) as context:
             self.page_element()
-        self.assertTrue(
-            '"{}" is not callable'.format(self.page_element.__class__.__name__) in
+        self.assertIn(
+            '"{}" is not callable'.format(self.page_element.__class__.__name__),
             context.exception
         )
 
@@ -408,8 +394,8 @@ class PageElementMethodsThrowExceptionTestCase(unittest.TestCase):
         """
         with self.assertRaises(TypeError) as context:
             iter(self.page_element)
-        self.assertTrue(
-            '"{}" is not iterable'.format(self.page_element.__class__.__name__) in
+        self.assertIn(
+            '"{}" is not iterable'.format(self.page_element.__class__.__name__),
             context.exception
         )
 
@@ -423,22 +409,10 @@ class PageElementMethodsThrowExceptionTestCase(unittest.TestCase):
         """
         with self.assertRaises(TypeError) as context:
             len(self.page_element)
-        self.assertTrue(
-            'object of type "{}" has no len()'.format(self.page_element.__class__.__name__) in
+        self.assertIn(
+            'object of type "{}" has no len()'.format(self.page_element.__class__.__name__),
             context.exception
         )
-
-    # test__set__
-    def test_set(self):
-        """Test `__set__` method.
-
-        Note:
-            This method should throw exception.
-
-        """
-        # TODO
-        pass
-
 
 # nothing important to test
 class PageApiTestCase(unittest.TestCase):
@@ -492,14 +466,6 @@ class BaseTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_getitem(self):
-        """Test `__getitem__` method.
-
-        Note:
-            # TODO
-        """
-        # TODO
-
     def test_getitem_throw_exception(self):
         """Test `__getitem__` method.
 
@@ -511,39 +477,6 @@ class BaseTestCase(unittest.TestCase):
         with self.assertRaises(KeyError):
             base = _Base()
             base.__getitem__('item')
-
-    def test_getattr(self):
-        """Test `__getattr__` method.
-
-        Note:
-            Test to return value of `area` attribute by key.
-
-        """
-        # TODO
-        pass
-
-    def test_area_throw_exception(self):
-        """Test `area` method.
-
-        Note:
-            This property should always throw `NotImplementedError`.
-
-        """
-        base = _Base()
-        with self.assertRaises(NotImplementedError):
-            base.area
-
-    def test_browser_when_proxy_defined(self):
-        """Test `browser` method.
-
-        Note:
-            This method should return `browser` attribute of
-            `proxy` object which is attribute of the current class
-            when `proxy` attribute is specified.
-
-        """
-        pass
-        # TODO use PropertyMock
 
     def test_browser_when_proxy_not_defined(self):
         """Test `browser` method.
@@ -606,19 +539,6 @@ class PageTestCase(unittest.TestCase):
                 new_callable=PropertyMock,
                 return_value=MagicMock(spec=QueryObject)):
             page = Page()
-            print(page.area)
-            # self.assertEqual(page.area, 'proxy')
-
-    def test_area_when_area_defined_and_area_is_query_object(self):
-        """Test `area` method.
-
-        Note:
-            This method should always throw exception when
-            `_area` attribute is specified and `QueryObject`
-            instance.
-
-        """
-        pass
 
     def test_area_when_area_defined_and_area_is_not_query_object(self):
         """Test `area` method.
@@ -636,10 +556,7 @@ class PageTestCase(unittest.TestCase):
             with self.assertRaises(TypeError) as context:
                 page = Page()
                 area = page.area
-            self.assertTrue('"__area__" can be instance of QueryObject only' in context.exception)
-
-    def test_open_url_path_defined(self):
-        pass
+            self.assertIn('"__area__" can be instance of QueryObject only', context.exception)
 
     def test_open_url_path_not_defined(self):
         """Test `open` method.
@@ -651,12 +568,9 @@ class PageTestCase(unittest.TestCase):
         with self.assertRaises(RuntimeError) as context:
             page = Page()
             page.open()
-        self.assertTrue(
-            'You should to set "__url_path__" attribute value for usage "show" method' in context.exception
+        self.assertIn(
+            'You should to set "__url_path__" attribute value for usage "show" method', context.exception
         )
-
-    def test_refresh(self):
-        pass
 
 
 class PageItemTestCase(unittest.TestCase):
@@ -698,16 +612,6 @@ class PageItemTestCase(unittest.TestCase):
         """
         page_item = PageItem()
         self.assertIsNone(page_item.we)
-
-    # TO CODE REVIEWER: the tests looks like prevoius tests for Page class
-    def test_area_when_area_not_defined(self):
-        pass
-
-    def test_area_when_area_defined_and_area_is_query_object(self):
-        pass
-
-    def test_area_when_area_defined_and_area_is_not_query_object(self):
-        pass
 
 
 def main():
